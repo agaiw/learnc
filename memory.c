@@ -15,7 +15,6 @@ void main()
   char test[] = "This is just some random text to make sure that everything works fine in this memory printer.";
 
   memory_print(test, (size_t)strlen(test));
-  printf("\n");
   return;
 
 } 
@@ -39,6 +38,8 @@ void memory_print(void* ptr, size_t buffer_size)
     current_row++;
 
   }
+
+  printf("\n");
 
 }
 
