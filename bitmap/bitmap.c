@@ -22,7 +22,7 @@ int main() {
 
   int pixelArrayOffset = *((int*)(buffer + 10));
 
-  char* pixelArray_p = buffer + 54;
+  unsigned char* pixelArray_p = buffer + 54;
 
   int bitmapWidth = *((int*)(buffer + 18));
   int bitmapHeight = *((int*)(buffer + 22));
@@ -42,11 +42,11 @@ int main() {
     hBlue[i] = 0;
   }
 
-  char* tempArray_p = pixelArray_p;
+  unsigned char* tempArray_p = pixelArray_p;
 
   for (int i = 0; i < bitmapHeight; i++) {
 
-    char* tempRow_p = tempArray_p;
+    unsigned char* tempRow_p = tempArray_p;
 
     for (int j = 0; j < bitmapWidth; j++) {
 
