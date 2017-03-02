@@ -50,9 +50,9 @@ int main() {
 
     for (int j = 0; j < bitmapWidth; j++) {
 
-      hRed[*(tempRow_p)] += 1;
+      hBlue[*(tempRow_p)] += 1;
       hGreen[*(tempRow_p + 1)] += 1;
-      hBlue[*(tempRow_p + 2)] += 1;
+      hRed[*(tempRow_p + 2)] += 1;
       tempRow_p += 3;
 
     }
