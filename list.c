@@ -14,6 +14,8 @@ void list_add(element_t** list, int value);
 
 void list_print(element_t* list);
 
+void list_free(element_t** list);
+
 void main() {
 
   element_t* lista;
@@ -22,7 +24,7 @@ void main() {
   list_add(&lista, 20);
   list_add(&lista, 30);
   list_print(lista);
-
+  list_free(&lista);
 }
 
 void list_init(element_t** list) {
@@ -72,3 +74,19 @@ void list_print(element_t* list) {
 
     printf("\n");
 }
+
+void list_free(element_t** list) {
+
+  element_t* current = *list;
+  element_t* temp;
+
+  while (current != NULL) {
+
+    temp = current;
+    current = current->next_p;
+    free(temp);
+  };
+
+    *list = NULL;
+}
+
