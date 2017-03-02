@@ -20,10 +20,7 @@ int main() {
   result = fread(buffer, 1, lSize, pFile);
   fclose(pFile);
 
-  printf("Size: %d\n", lSize);
-
   int pixelArrayOffset = *((int*)(buffer + 10));
-  printf("pixelArrayOffset: %d\n", pixelArrayOffset);
 
   char* pixelArray_p = buffer + 54;
 
@@ -31,12 +28,8 @@ int main() {
   int bitmapHeight = *((int*)(buffer + 22));
 
   short bitsPerPixel = *((short*)(buffer + 28)); //24
-  printf("Bits per pixel: %d\n", bitsPerPixel);
-
-  printf("width: %d, height: %d\n", bitmapWidth, bitmapHeight);
 
   int rowSize = ((int)((bitsPerPixel * bitmapWidth + 31) / 32)) * 4;
-  printf("rowsize: %d\n", rowSize);
 
   int hRed[256];
   int hGreen[256];
