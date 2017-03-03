@@ -1,6 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
+  struct parameters {
+    int bitmapHeight;
+    int bitmapWidth;
+    int rowSize;
+    unsigned char* pixelArray_p;
+    int offset;
+    int* hArray;
+
+  } parameters;
+
+void fillHistogram(struct parameters* parameters);
 
 int main() {
 
@@ -21,7 +33,7 @@ int main() {
   fclose(pFile);
 
   int pixelArrayOffset = *((int*)(buffer + 10));
-
+ 
   unsigned char* pixelArray_p = buffer + 54;
 
   int bitmapWidth = *((int*)(buffer + 18));
@@ -35,35 +47,65 @@ int main() {
   int hGreen[256];
   int hBlue[256]; 
 
-  for (int i = 0; i < 256; i++) {
+  struct parameters parametersB = {bitmapHeight, bitmapWidth, rowSize, pixelArray_p, 2, hBlue};
+  struct parameters parametersG = {bitmapHeight, bitmapWidth, rowSize, pixelArray_p, 2, hGreen};
+  struct parameters parametersR = {bitmapHeight, bitmapWidth, rowSize, pixelArray_p, 2, hRed};
 
-    hRed[i] = 0;
-    hGreen[i] = 0;
-    hBlue[i] = 0;
-  }
+  //threads
+  pthread_t threadR, threadG, threadB;
 
-  unsigned char* tempArray_p = pixelArray_p;
+  pthread_create(&threadB, NULL, &fillHistogram, &parametersB);
+  pthread_create(&threadG, NULL, &fillHistogram, &parametersG);
+  pthread_create(&threadR, NULL, &fillHistogram, &parametersR);
 
-  for (int i = 0; i < bitmapHeight; i++) {
-
-    unsigned char* tempRow_p = tempArray_p;
-
-    for (int j = 0; j < bitmapWidth; j++) {
-
-      hBlue[*(tempRow_p)] += 1;
-      hGreen[*(tempRow_p + 1)] += 1;
-      hRed[*(tempRow_p + 2)] += 1;
-      tempRow_p += 3;
-
-    }
-
-    tempArray_p += rowSize;
-
-  }
-
+  pthread_join(threadB, NULL);
+  pthread_join(threadG, NULL);
+  pthread_join(threadR, NULL);
 
   free(buffer);
+
+ 
+  for(int i = 0; i < 256; i++) {
+    printf("%d\t%d\t%d\t%d\n", i, hBlue[i], hGreen[i], hRed[i]); 
+  }
 
   return 0;
 
 }
+void fillHistogram(struct parameters* parameters) {
+
+  for (int i = 0; i < 256; i++) {
+
+    *(parameters->hArray + i) = 0;
+
+  }
+
+  unsigned char* tempArray_p = parameters->pixelArray_p;
+
+  for (int i = 0; i < parameters->bitmapHeight; i++) {
+
+    unsigned char* tempRow_p = tempArray_p;
+
+    for (int j = 0; j < parameters->bitmapWidth; j++) {
+
+      parameters->hArray[*(tempRow_p + parameters->offset)] += 1;
+      tempRow_p += 3;
+
+    }
+
+    tempArray_p += parameters->rowSize;
+
+  return;
+
+}
+
+
+
+
+
+
+
+
+}
+
+
