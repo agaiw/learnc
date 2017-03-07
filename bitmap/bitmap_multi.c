@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+#define HSIZE 256
+
 struct bitmap {
 
   int bmpHeight;
@@ -13,9 +15,9 @@ struct bitmap {
 
 struct histogram {
 
-  int blue[256];
-  int green[256];
-  int red[256];
+  int blue[HSIZE];
+  int green[HSIZE];
+  int red[HSIZE];
 
 } histogram;
 
@@ -43,14 +45,6 @@ struct histogram finalH;
 
 int main(int argc, char* argv[]) {
 
-  for (int i = 0; i < 256; i++) {
-
-  finalH.blue[i] = 0;
-  finalH.green[i] = 0;
-  finalH.red[i] = 0;
-
-  }
-
   if (argc < 3) {
 
     printf("Error\n");
@@ -62,28 +56,24 @@ int main(int argc, char* argv[]) {
   int numberOfThreads = atoi(argv[2]);
 
   readBitmapProperties(buffer, &bitmap);
-  printf("array address: %p\n", bitmap.pixelArray_p);
   commonParams.rowsPerThread = (bitmap.bmpHeight / numberOfThreads);
 
   commonParams.histogram = &finalH;
   commonParams.bitmap = &bitmap;
 
-  printf("rows per thread: %d\n", commonParams.rowsPerThread);
-
   //threads
   pthread_t* threads = malloc(sizeof(pthread_t) * numberOfThreads);
 
-  printf("numberofthreads: %d\n", numberOfThreads);
+  struct threadParams* thParams = malloc(sizeof(struct threadParams) * numberOfThreads);
 
   for (int i = 0; i < numberOfThreads; i++) {
 
-    struct threadParams params;
-    params.commonParams = &commonParams;
-    params.startRow = i * (params.commonParams)->rowsPerThread;
-    params.endRow = ((params.startRow + (params.commonParams)->rowsPerThread) > bitmap.bmpHeight ? (bitmap.bmpHeight + 1) : params.startRow + (params.commonParams)->rowsPerThread);
-    printf("start row: %d, end row: %d\n", params.startRow, params.endRow);
-
-    pthread_create((threads + i), NULL, fillHistogram, &params);
+    struct threadParams* params = (thParams + i * sizeof(struct threadParams));
+//    struct threadParams params;
+    params->commonParams = &commonParams;
+    params->startRow = i * (params->commonParams)->rowsPerThread;
+    params->endRow = ((params->startRow + (params->commonParams)->rowsPerThread) > bitmap.bmpHeight ? (bitmap.bmpHeight + 1) : params->startRow + (params->commonParams)->rowsPerThread);
+    pthread_create((threads + i), NULL, fillHistogram, params);
 
   }
 
@@ -92,36 +82,23 @@ int main(int argc, char* argv[]) {
   pthread_join(threads[i], NULL);
 
   }
-
+  free(thParams);
+  free(threads);
   free(buffer);
 
-  int B = 0;
-  int G = 0;
-  int R = 0;
-
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < HSIZE; i++) {
 
     printf("%d\t%d\t%d\t%d\t\n", i, finalH.blue[i], finalH.green[i], finalH.red[i]);
-    B += finalH.blue[i];
-    G += finalH.green[i];
-    R += finalH.red[i];
 
   }
-  printf("B: %d, G: %d, R: %d\n", B, G, R);
   return 0;
 
 }
 void fillHistogram(struct threadParams* params) {
 
-  int sumBlue = 0;
-  int sumGreen = 0;
-  int sumRed = 0;
-  int sumBlueFinal = 0; 
-  int sumGreenFinal = 0; 
-  int sumRedFinal = 0; 
   struct histogram tempH;
 
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < HSIZE; i++) {
 
     tempH.blue[i] = 0;
     tempH.green[i] = 0;
@@ -130,12 +107,10 @@ void fillHistogram(struct threadParams* params) {
 
   int offset = (((params->commonParams)->bitmap)->bmpRowSize) * (params->startRow);
   unsigned char* tempArray_p = ((params->commonParams)->bitmap)->pixelArray_p + offset;
-  printf("startRow: %d, offset: %d, tempArray_p: %p\n", params->startRow, offset, tempArray_p);
 
   for (int i = params->startRow; i < params->endRow; i++) {
 
-
-    unsigned char* tempRow_p = tempArray_p + offset;
+    unsigned char* tempRow_p = tempArray_p;
 
     for (int j = 0; j < ((params->commonParams)->bitmap)->bmpWidth; j++) {
 
@@ -151,22 +126,13 @@ void fillHistogram(struct threadParams* params) {
 
   pthread_mutex_lock(&histogramLock);
 
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < HSIZE; i++) {
 
     finalH.blue[i] += tempH.blue[i];
     finalH.green[i] += tempH.green[i];
     finalH.red[i] += tempH.red[i];
     
-   sumBlue += tempH.blue[i];
-   sumGreen += tempH.green[i];
-   sumRed += tempH.red[i];
-
-  sumBlueFinal += finalH.blue[i];
-  sumGreenFinal += finalH.green[i];
-  sumRedFinal += finalH.red[i];
   }
-  printf("in this thread sumBlue: %d, sumGreen: %d, sumRed: %d\n", sumBlue, sumGreen, sumRed);
-  printf("in this thread sumBlueFinal: %d, sumGreenFinal: %d, sumRedFinal: %d\n", sumBlueFinal, sumGreenFinal, sumRedFinal);
   pthread_mutex_unlock(&histogramLock);
   
   return;
