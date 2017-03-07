@@ -67,9 +67,9 @@ int main(int argc, char* argv[]) {
   fParameters.endRow = ((fParameters.startRow + rowsPerThread) > bitmap.bmpHeight ? bitmap.bmpHeight : fParameters.startRow + rowsPerThread);
   printf("start row: %d, end row: %d\n", fParameters.startRow, fParameters.endRow);
 
-  pthread_t thread;
-  *(threads + i) = &thread;
-  pthread_create(&thread, NULL, fillHistogram, &fParameters);
+  //pthread_t thread;
+ // *(threads + i) = &thread;
+  pthread_create((threads + i), NULL, fillHistogram, &fParameters);
 
   }
 
