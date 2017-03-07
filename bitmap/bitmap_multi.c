@@ -47,26 +47,27 @@ int main(int argc, char* argv[]) {
   int numberOfThreads = atoi(argv[2]);
 
   readBitmapProperties(buffer, &bitmap);
-  
-  
-  //threads
-  pthread_t* threads = malloc(sizeof(pthread_t) * numberOfThreads);
+
+  int rowsPerThread = (bitmap.bmpHeight / numberOfThreads) + 1;
 
   fParameters.histogram = &finalH;
   fParameters.bitmap = &bitmap;
   fParameters.startRow = 0;
   fParameters.endRow = 0;
-
-  int rowsPerThread = (bitmap.bmpHeight / numberOfThreads) + 1;
   fParameters.endRow = fParameters.startRow + rowsPerThread;
 
   printf("rows per thread: %d\n", rowsPerThread);
+
+  //threads
+  pthread_t* threads = malloc(sizeof(pthread_t) * numberOfThreads);
 
   for (int i = 0; i < numberOfThreads; i++) {
 
   fParameters.startRow = i * rowsPerThread;
   fParameters.endRow = ((fParameters.startRow + rowsPerThread) > bitmap.bmpHeight ? bitmap.bmpHeight : fParameters.startRow + rowsPerThread);
   printf("start row: %d, end row: %d\n", fParameters.startRow, fParameters.endRow);
+
+  //threads
   pthread_t thread;
   *(threads + i) = &thread;
   pthread_create(&thread, NULL, fillHistogram, &fParameters);
