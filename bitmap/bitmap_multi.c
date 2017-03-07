@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 
   for (int i = 0; i < numberOfThreads; i++) {
 
-    struct threadParams* params = (thParams + i * sizeof(struct threadParams));
+    struct threadParams* params = (thParams + i);
 //    struct threadParams params;
     params->commonParams = &commonParams;
     params->startRow = i * (params->commonParams)->rowsPerThread;
